@@ -6,6 +6,15 @@
 #include "Object.h"
 #include <set>
 
+struct ColorEdges {
+    ColorEdges(const cv::Scalar& color, const affdex::str& start, const affdex::str& end) :
+        color_(color), start_(start), end_(end) {}
+
+    cv::Scalar color_;
+    affdex::str start_;
+    affdex::str end_;
+};
+
 //Plot the face metrics using opencv highgui
 class Visualizer {
 public:
@@ -36,6 +45,9 @@ public:
                          std::vector<affdex::vision::Point> bounding_box,
                          bool draw_face_id = false);
 
+    // Draw body related metrics
+    void drawBodyMetrics(std::map<affdex::vision::BodyPoint, affdex::vision::Point>& body_points);
+
     //Draw occupant related metrics
     void drawOccupantMetrics(const affdex::vision::Occupant& occupant);
 
@@ -54,6 +66,8 @@ public:
     std::map<affdex::vision::DominantEmotion, std::string> DOMINANT_EMOTIONS;
     std::map<affdex::vision::Mood, std::string> MOODS;
     std::map<affdex::vision::AgeCategory, std::string> AGE_CATEGORIES;
+    std::vector<ColorEdges> COLOR_EDGES_PAIR; //contains body points with its respective color
+    std::unordered_map<affdex::str, affdex::vision::BodyPoint> STRING_TO_BODY_POINT; //convert string to body point
 
 private:
 
@@ -121,3 +135,5 @@ private:
     const cv::Scalar color1_;
     const cv::Scalar color2_;
 };
+
+

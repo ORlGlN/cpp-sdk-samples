@@ -51,7 +51,7 @@ public:
         }
 
         for (const auto& occupant_id_pair : occupants) {
-            vision::Occupant occup = occupant_id_pair.second;
+            const vision::Occupant occup = occupant_id_pair.second;
             std::vector<vision::Point> bbox({occup.boundingBox.getTopLeft(), occup.boundingBox.getBottomRight()});
 
             out_stream_ << time_stamp << ","

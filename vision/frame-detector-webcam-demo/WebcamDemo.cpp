@@ -2,6 +2,7 @@
 #include "PlottingImageListener.h"
 #include "PlottingObjectListener.h"
 #include "PlottingOccupantListener.h"
+#include "PlottingBodyListener.h"
 #include "StatusListener.h"
 #include "FileUtils.h"
 
@@ -29,7 +30,8 @@ struct ProgramOptions {
     enum DetectionType {
         FACE,
         OBJECT,
-        OCCUPANT
+        OCCUPANT,
+        BODY
     };
     // cmd line args
     affdex::Path data_dir;
@@ -89,7 +91,37 @@ void assembleProgramOptions(po::options_description& description, ProgramOptions
          "Draw face id on screen. Note: Drawing to screen must be enabled.")
         ("file,f", po::value<affdex::Path>(&program_options.output_file_path), "Name of the output CSV file.")
         ("object", "Enable object detection")
-        ("occupant", "Enable occupant detection");
+        ("occupant", "Enable occupant detection")
+        ("body", "Enable body detection");
+
+}
+bool verifyTypeOfProcess(const po::variables_map& args, ProgramOptions& program_options) {
+
+    //Check for object or occupant or body argument present or not. If nothing is present then enable face by default.
+    const bool bOccupant = args.count("occupant");
+    const bool bObject = args.count("object");
+    const bool bBody = args.count("body");
+    const bool bAll = bOccupant && bObject && bBody;
+
+    if ((bOccupant && bObject) || (bObject && bBody) || (bBody && bOccupant) || bAll) {
+        return false;
+    }
+    else if (args.count("object")) {
+        std::cout << "Setting up object detection\n";
+        program_options.detection_type = program_options.OBJECT;
+    }
+    else if (args.count("occupant")) {
+        std::cout << "Setting up occupant detection\n";
+        program_options.detection_type = program_options.OCCUPANT;
+    }
+    else if (args.count("body")) {
+        std::cout << "Setting up body detection\n";
+        program_options.detection_type = program_options.BODY;
+    }
+    else {
+        std::cout << "Setting up face detection\n";
+    }
+    return true;
 }
 
 bool processFrameFromWebcam(std::unique_ptr<vision::Detector>& frame_detector, ProgramOptions& program_options,
@@ -196,7 +228,7 @@ void processObjectStream(std::unique_ptr<vision::Detector>& frame_detector, std:
             }
         }
 #ifdef _WIN32
-            while (!GetAsyncKeyState(VK_ESCAPE) && status_listener.isRunning());
+        while (!GetAsyncKeyState(VK_ESCAPE) && status_listener.isRunning());
 #else //  _WIN32
         while (status_listener.isRunning() && (cv::waitKey(20) != 27)); // ascii for ESC
 #endif
@@ -253,6 +285,52 @@ void processOccupantStream(std::unique_ptr<vision::Detector>& frame_detector,
     frame_detector->stop();
 }
 
+void processBodyStream(std::unique_ptr<vision::Detector>& frame_detector,
+                           std::ofstream& csv_file_stream,
+                           ProgramOptions& program_options,
+                           StatusListener& status_listener,
+                           cv::VideoCapture& webcam) {
+
+    // prepare listeners
+    PlottingBodyListener body_listener(csv_file_stream, program_options.draw_display, !program_options
+        .disable_logging, program_options.draw_id, 500);
+
+
+    // configure the Detector by enabling features and assigning listeners
+    frame_detector->enable(vision::Feature::BODIES);
+    frame_detector->setBodyListener(&body_listener);
+    frame_detector->setProcessStatusListener(&status_listener);
+
+    const auto start_time = std::chrono::system_clock::now();
+
+    //Start the frame detector thread.
+    frame_detector->start();
+
+    try {
+        vision::Frame frame;
+        do {
+            if (!processFrameFromWebcam(frame_detector, program_options, webcam, start_time, frame)) {
+                break;
+            }
+
+            body_listener.processResults(frame);
+            //To save output video file
+            if (program_options.write_video) {
+                program_options.output_video << body_listener.getImageData();
+            }
+        }
+#ifdef _WIN32
+        while (!GetAsyncKeyState(VK_ESCAPE) && status_listener.isRunning());
+#else //  _WIN32
+        while (status_listener.isRunning() && (cv::waitKey(20) != 27)); // ascii for ESC
+#endif
+    }
+    catch (std::exception& ex) {
+        StatusListener::printException(ex);
+    }
+    frame_detector->stop();
+}
+
 int main(int argsc, char** argsv) {
 
     std::cout << "Hit ESCAPE key to exit app.." << endl;
@@ -289,22 +367,10 @@ int main(int argsc, char** argsv) {
 
         //Check for object or occupant argument present or not. If nothing is present then enable face by default.
 
-        if (args.count("object") && args.count("occupant")) {
-            std::cerr << "Can't turn on Object and occupant detection\n";
-            std::cerr << "ERROR: Can't use --occupant and --object at the same time\n";
+        if (!verifyTypeOfProcess(args, program_options)) {
+            std::cerr << "ERROR: Can't use multiple detection type at the same time\n\n";
             std::cerr << "For help, use the -h option.\n\n";
             return 1;
-        }
-        else if (args.count("object")) {
-            std::cout << "Setting up object detection\n";
-            program_options.detection_type = program_options.OBJECT;
-        }
-        else if (args.count("occupant")) {
-            std::cout << "Setting up occupant detection\n";
-            program_options.detection_type = program_options.OCCUPANT;
-        }
-        else {
-            std::cout << "Setting up face detection\n";
         }
 
         program_options.write_video = args.count("output");
@@ -396,6 +462,9 @@ int main(int argsc, char** argsv) {
                 break;
             case program_options.OCCUPANT:
                 processOccupantStream(frame_detector, csv_file_stream, program_options, status_listener, webcam);
+                break;
+            case program_options.BODY:
+                processBodyStream(frame_detector, csv_file_stream, program_options, status_listener, webcam);
                 break;
             case program_options.FACE:
                 processFaceStream(frame_detector, csv_file_stream, program_options, status_listener, webcam);

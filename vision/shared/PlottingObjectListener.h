@@ -78,7 +78,7 @@ public:
         }
 
         for (const auto& id_obj_pair : objects) {
-            Object obj = id_obj_pair.second;
+            const Object obj = id_obj_pair.second;
             std::vector<Point> bbox({obj.boundingBox.getTopLeft(), obj.boundingBox.getBottomRight()});
 
             out_stream_ << time_stamp << ","
