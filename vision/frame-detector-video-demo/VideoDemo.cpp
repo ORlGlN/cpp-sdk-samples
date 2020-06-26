@@ -222,8 +222,7 @@ void processBodyVideo(vision::SyncFrameDetector& detector, std::ofstream& csv_fi
         cout << "******************************************************************\n"
              << "Percent of samples w/bodies present: " << body_listener.getSamplesWithBodiesPercent()
              << "%\n"
-             // << "Occupants detected in regions:  " << body_listener.getOccupantRegionsDetected() << endl
-             << "Occupant callback interval: " << body_listener.getCallbackInterval() << "ms\n"
+             << "Body callback interval: " << body_listener.getCallbackInterval() << "ms\n"
              << "******************************************************************\n";
 
         detector.reset();
