@@ -368,7 +368,7 @@ int main(int argsc, char** argsv) {
         //Check for object or occupant argument present or not. If nothing is present then enable face by default.
 
         if (!verifyTypeOfProcess(args, program_options)) {
-            std::cerr << "ERROR: Can't use multiple detection type at the same time\n\n";
+            std::cerr << "ERROR: Can't use multiple detection types at the same time\n\n";
             std::cerr << "For help, use the -h option.\n\n";
             return 1;
         }

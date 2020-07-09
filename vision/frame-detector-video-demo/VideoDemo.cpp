@@ -346,7 +346,7 @@ int main(int argsc, char** argsv) {
     std::string detection_type_str;
 
     if (!verifyTypeOfProcess(args, detection_type_str, program_options)) {
-        std::cerr << "ERROR: Can't use multiple detection type at the same time\n\n";
+        std::cerr << "ERROR: Can't use multiple detection types at the same time\n\n";
         std::cerr << "For help, use the -h option.\n\n";
         return 1;
     }
