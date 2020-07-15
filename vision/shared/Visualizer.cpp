@@ -82,29 +82,25 @@ Visualizer::Visualizer() :
     };
 
     COLOR_EDGES_PAIR = {
-        {cv::Scalar(255, 0, 0), "neck", "right_shoulder"},
-        {cv::Scalar(255, 85, 0), "neck", "left_shoulder"},
-        {cv::Scalar(255, 170, 0), "right_shoulder", "right_elbow"},
-        {cv::Scalar(255, 255, 0), "right_elbow", "right_wrist"},
-        {cv::Scalar(170, 255, 0), "left_shoulder", "left_elbow"},
-        {cv::Scalar(85, 255, 0), "left_elbow", "left_wrist"},
-        {cv::Scalar(0, 255, 0), "neck", "right_hip"},
-        {cv::Scalar(0, 255, 85), "right_hip", "right_knee"},
-        {cv::Scalar(0, 255, 170), "right_knee", "right_ankle"},
-        {cv::Scalar(0, 255, 255), "neck", "left_hip"},
-        {cv::Scalar(0, 170, 255), "left_hip", "left_knee"},
-        {cv::Scalar(0, 85, 255), "left_knee", "left_ankle"},
-        {cv::Scalar(0, 0, 255), "neck", "nose"},
-        {cv::Scalar(85, 0, 255), "nose", "right_eye"},
-        {cv::Scalar(170, 0, 255), "right_eye", "right_ear"},
-        {cv::Scalar(255, 0, 255), "nose", "left_eye"},
-        {cv::Scalar(255, 0, 170), "left_eye", "left_ear"}
+        {cv::Scalar(255, 0, 0), BodyPoint::NECK, BodyPoint::RIGHT_SHOULDER},
+        {cv::Scalar(255, 85, 0), BodyPoint::NECK, BodyPoint::LEFT_SHOULDER},
+        {cv::Scalar(255, 170, 0), BodyPoint::RIGHT_SHOULDER, BodyPoint::RIGHT_ELBOW},
+        {cv::Scalar(255, 255, 0), BodyPoint::RIGHT_ELBOW, BodyPoint::RIGHT_WRIST},
+        {cv::Scalar(170, 255, 0), BodyPoint::LEFT_SHOULDER, BodyPoint::LEFT_ELBOW},
+        {cv::Scalar(85, 255, 0), BodyPoint::LEFT_ELBOW, BodyPoint::LEFT_WRIST},
+        {cv::Scalar(0, 255, 0), BodyPoint::NECK, BodyPoint::RIGHT_HIP},
+        {cv::Scalar(0, 255, 85), BodyPoint::RIGHT_HIP, BodyPoint::RIGHT_KNEE},
+        {cv::Scalar(0, 255, 170), BodyPoint::RIGHT_KNEE, BodyPoint::RIGHT_ANKLE},
+        {cv::Scalar(0, 255, 255), BodyPoint::NECK, BodyPoint::LEFT_HIP},
+        {cv::Scalar(0, 170, 255), BodyPoint::LEFT_HIP, BodyPoint::LEFT_KNEE},
+        {cv::Scalar(0, 85, 255), BodyPoint::LEFT_KNEE, BodyPoint::LEFT_ANKLE},
+        {cv::Scalar(0, 0, 255), BodyPoint::NECK, BodyPoint::NOSE},
+        {cv::Scalar(85, 0, 255), BodyPoint::NOSE, BodyPoint::RIGHT_EYE},
+        {cv::Scalar(170, 0, 255), BodyPoint::RIGHT_EYE, BodyPoint::RIGHT_EAR},
+        {cv::Scalar(255, 0, 255), BodyPoint::NOSE, BodyPoint::LEFT_EYE},
+        {cv::Scalar(255, 0, 170), BodyPoint::LEFT_EYE, BodyPoint::LEFT_EAR}
     };
 
-    // flip BODY_POINT_TO_STRING
-    for (auto pair : BODY_POINT_TO_STRING) {
-        STRING_TO_BODY_POINT[pair.second] = pair.first;
-    }
 }
 
 void Visualizer::drawFaceMetrics(affdex::vision::Face face, std::vector<Point> bounding_box, bool draw_face_id) {
@@ -251,10 +247,10 @@ void Visualizer::drawText(const std::string& name, const std::string& value,
 void Visualizer::drawBodyMetrics(std::map<BodyPoint, Point>& body_points) {
     //draw lines between two decided body points
     for (const auto& color_edges : COLOR_EDGES_PAIR) {
-        if (body_points.find(STRING_TO_BODY_POINT[color_edges.start_]) != body_points.end() &&
-            body_points.find(STRING_TO_BODY_POINT[color_edges.end_]) != body_points.end()) {
-            const Point pt1 = body_points[STRING_TO_BODY_POINT[color_edges.start_]];
-            const Point pt2 = body_points[STRING_TO_BODY_POINT[color_edges.end_]];
+        if (body_points.find(color_edges.start_) != body_points.end() &&
+            body_points.find(color_edges.end_) != body_points.end()) {
+            const Point pt1 = body_points[color_edges.start_];
+            const Point pt2 = body_points[color_edges.end_];
 
             cv::line(img, cv::Point(pt1.x, pt1.y), cv::Point(pt2.x, pt2.y), color_edges.color_);
         }

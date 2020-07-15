@@ -7,12 +7,12 @@
 #include <set>
 
 struct ColorEdges {
-    ColorEdges(const cv::Scalar& color, const affdex::str& start, const affdex::str& end) :
+    ColorEdges(const cv::Scalar& color, const affdex::vision::BodyPoint& start, const affdex::vision::BodyPoint& end) :
         color_(color), start_(start), end_(end) {}
 
     cv::Scalar color_;
-    affdex::str start_;
-    affdex::str end_;
+    affdex::vision::BodyPoint start_;
+    affdex::vision::BodyPoint end_;
 };
 
 //Plot the face metrics using opencv highgui
@@ -67,7 +67,6 @@ public:
     std::map<affdex::vision::Mood, std::string> MOODS;
     std::map<affdex::vision::AgeCategory, std::string> AGE_CATEGORIES;
     std::vector<ColorEdges> COLOR_EDGES_PAIR; //contains body points with its respective color
-    std::unordered_map<affdex::str, affdex::vision::BodyPoint> STRING_TO_BODY_POINT; //convert string to body point
 
 private:
 
