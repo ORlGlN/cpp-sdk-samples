@@ -235,7 +235,7 @@ void processFaceVideo(vision::SyncFrameDetector& detector,
                       ProgramOptions& program_options) {
     // configure the Detector by enabling features
     detector.enable({vision::Feature::EMOTIONS, vision::Feature::EXPRESSIONS, vision::Feature::IDENTITY,
-                     vision::Feature::APPEARANCES});
+                     vision::Feature::APPEARANCES, vision::Feature::GAZE});
 
     // prepare listeners
     PlottingImageListener image_listener(csv_file_stream, program_options.draw_display,
