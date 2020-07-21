@@ -78,7 +78,7 @@ void assembleProgramOptions(po::options_description& description, ProgramOptions
          po::bool_switch(&program_options.disable_logging)->default_value(false),
          "Disable logging to console")
         ("object", "Enable object detection")
-        ("occupant", "Enable occupant detection")
+        ("occupant", "Enable occupant detection, also enables body and face detection")
         ("body", "Enable body detection");
 }
 
@@ -139,6 +139,8 @@ void processOccupantVideo(vision::SyncFrameDetector& detector, std::ofstream& cs
                           ProgramOptions& program_options) {
 
     // configure the Detector by enabling features
+    detector.enable(vision::Feature::FACES);
+    detector.enable(vision::Feature::BODIES);
     detector.enable(vision::Feature::OCCUPANTS);
 
     // prepare listeners
@@ -283,12 +285,12 @@ bool verifyTypeOfProcess(const po::variables_map& args,
                          ProgramOptions& program_options) {
 
     //Check for object or occupant or body argument present or not. If nothing is present then enable face by default.
-    const bool bOccupant = args.count("occupant");
-    const bool bObject = args.count("object");
-    const bool bBody = args.count("body");
-    const bool bAll = bOccupant && bObject && bBody;
+    const bool is_occupant = args.count("occupant");
+    const bool is_object = args.count("object");
+    const bool is_body = args.count("body");
+    const bool is_all = is_occupant && is_object && is_body;
 
-    if ((bOccupant && bObject) || (bObject && bBody) || (bBody && bOccupant) || bAll) {
+    if ((is_occupant && is_object) || (is_object && is_body) || (is_body && is_occupant) || is_all) {
         return false;
     }
     else if (args.count("object")) {
@@ -424,9 +426,6 @@ int main(int argsc, char** argsv) {
                 processBodyVideo(*detector, csv_file_stream, program_options);
                 break;
             case program_options.FACE:
-                //update the detector accordingly
-                detector =
-                    std::make_shared<vision::SyncFrameDetector>(program_options.data_dir, program_options.num_faces);
                 processFaceVideo(*detector, csv_file_stream, program_options);
                 break;
             default:

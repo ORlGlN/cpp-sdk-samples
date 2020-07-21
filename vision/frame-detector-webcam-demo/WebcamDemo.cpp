@@ -91,19 +91,19 @@ void assembleProgramOptions(po::options_description& description, ProgramOptions
          "Draw face id on screen. Note: Drawing to screen must be enabled.")
         ("file,f", po::value<affdex::Path>(&program_options.output_file_path), "Name of the output CSV file.")
         ("object", "Enable object detection")
-        ("occupant", "Enable occupant detection")
+        ("occupant", "Enable occupant detection, also enables body and face detection")
         ("body", "Enable body detection");
 
 }
 bool verifyTypeOfProcess(const po::variables_map& args, ProgramOptions& program_options) {
 
     //Check for object or occupant or body argument present or not. If nothing is present then enable face by default.
-    const bool bOccupant = args.count("occupant");
-    const bool bObject = args.count("object");
-    const bool bBody = args.count("body");
-    const bool bAll = bOccupant && bObject && bBody;
+    const bool is_occupant = args.count("occupant");
+    const bool is_object = args.count("object");
+    const bool is_body = args.count("body");
+    const bool is_all = is_occupant && is_object && is_body;
 
-    if ((bOccupant && bObject) || (bObject && bBody) || (bBody && bOccupant) || bAll) {
+    if ((is_occupant && is_object) || (is_object && is_body) || (is_body && is_occupant) || is_all) {
         return false;
     }
     else if (args.count("object")) {
@@ -159,7 +159,7 @@ void processFaceStream(std::unique_ptr<vision::Detector>& frame_detector, std::o
 
     // configure the Detector by enabling features and assigning listeners
     frame_detector->enable({vision::Feature::EMOTIONS, vision::Feature::EXPRESSIONS, vision::Feature::IDENTITY,
-                            vision::Feature::APPEARANCES});
+                            vision::Feature::APPEARANCES, vision::Feature::GAZE});
     frame_detector->setImageListener(&image_listener);
     frame_detector->setFaceListener(&face_listener);
     frame_detector->setProcessStatusListener(&status_listener);
@@ -251,6 +251,8 @@ void processOccupantStream(std::unique_ptr<vision::Detector>& frame_detector,
 
 
     // configure the Detector by enabling features and assigning listeners
+    frame_detector->enable(vision::Feature::FACES);
+    frame_detector->enable(vision::Feature::BODIES);
     frame_detector->enable(vision::Feature::OCCUPANTS);
     frame_detector->setOccupantListener(&occupant_listener);
     frame_detector->setProcessStatusListener(&status_listener);

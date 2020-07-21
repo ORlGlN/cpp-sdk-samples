@@ -142,7 +142,6 @@ void Visualizer::drawFaceMetrics(affdex::vision::Face face, std::vector<Point> b
     //Draw Head Angles
     drawHeadOrientation(face.getMeasurements(), bounding_box[1].x, padding, false);
 
-
     padding = bounding_box[0].y;  //Top right Y
     if (draw_face_id) {
         drawText("ID",
@@ -178,16 +177,15 @@ void Visualizer::drawFaceMetrics(affdex::vision::Face face, std::vector<Point> b
     drawText("age", age_content, cv::Point(bounding_box[0].x, padding += spacing), true);
     drawClassifierOutput("age_confidence", age.confidence, cv::Point(bounding_box[0].x, padding += spacing), true);
 
+    //Draw age category
+    const auto age_category = face.getAgeCategory();
+    drawText("age_category", AGE_CATEGORIES.at(age_category), cv::Point(bounding_box[0].x, padding += spacing),
+             true);
 
     //Draw gaze
     auto gaze = face.getGazeMetric();
     drawText("gaze", GAZE[gaze.gaze], cv::Point(bounding_box[0].x, padding += spacing), true);
     drawClassifierOutput("gaze_confidence", gaze.confidence, cv::Point(bounding_box[0].x, padding += spacing), true);
-
-    //Draw age category
-    const auto age_category = face.getAgeCategory();
-    drawText("age_category", AGE_CATEGORIES.at(age_category), cv::Point(bounding_box[0].x, padding += spacing),
-             true);
 
 
 }
@@ -282,6 +280,10 @@ void Visualizer::drawOccupantMetrics(const affdex::vision::Occupant& occupant) {
     // Draw occupant bounding box
     auto bbox = {occupant.boundingBox.getTopLeft(), occupant.boundingBox.getBottomRight()};
     drawBoundingBox(bbox, {199, 110, 255});
+    if(occupant.body) {
+        drawBodyMetrics(occupant.body->body_points);
+
+    }
 
     //Do not draw if polygon's ID is Unknown
     if (occupant.matchedSeat.cabinRegion.id != REGION_UNKNOWN) {

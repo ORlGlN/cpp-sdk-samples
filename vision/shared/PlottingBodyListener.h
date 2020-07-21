@@ -26,7 +26,7 @@ static std::map<BodyPoint, str> BODY_POINT_TO_STRING = {
     {BodyPoint::LEFT_EAR, "left_ear"}
 };
 
-constexpr std::initializer_list<BodyPoint> BODY_POINTS = {
+static const std::vector<BodyPoint> BODY_POINTS = {
     BodyPoint::NOSE,
     BodyPoint::NECK,
     BodyPoint::RIGHT_SHOULDER,
