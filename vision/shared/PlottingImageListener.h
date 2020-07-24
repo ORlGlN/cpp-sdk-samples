@@ -152,27 +152,6 @@ public:
         image_data_ = viz_.getImageData();
     }
 
-    void processResults() override {
-        while (getDataSize() > 0) {
-            const std::pair<vision::Frame, std::map<vision::FaceId, vision::Face>> dataPoint = getData();
-            vision::Frame frame = dataPoint.first;
-            const std::map<vision::FaceId, vision::Face> faces = dataPoint.second;
-
-            if (draw_display_) {
-                draw(faces, frame);
-            }
-
-            outputToFile(faces, frame.getTimestamp());
-
-            if (logging_enabled_) {
-                std::cout << "timestamp: " << frame.getTimestamp()
-                          << " cfps: " << getCaptureFrameRate()
-                          << " pfps: " << getProcessingFrameRate()
-                          << " faces: " << faces.size() << std::endl;
-            }
-        }
-    }
-
     int getFramesWithFaces() const {
         return frames_with_faces_;
     }

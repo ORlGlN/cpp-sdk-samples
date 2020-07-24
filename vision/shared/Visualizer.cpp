@@ -216,7 +216,7 @@ void Visualizer::drawBoundingBox(const std::vector<Point>& bounding_box, const c
 void Visualizer::drawPolygon(const std::vector<Point>& points, const cv::Scalar& color) {
     if (!points.empty()) {
         //Draw polygon
-        std::vector<cv::Point> pts;
+        std::vector<cv::Point> pts(points.size());
         for (const auto& p: points) {
             pts.emplace_back(cv::Point(p.x, p.y));
         }
@@ -263,10 +263,6 @@ void Visualizer::drawOccupantMetrics(const affdex::vision::Occupant& occupant) {
     // Draw occupant bounding box
     auto bbox = {occupant.boundingBox.getTopLeft(), occupant.boundingBox.getBottomRight()};
     drawBoundingBox(bbox, {199, 110, 255});
-    if(occupant.body) {
-        drawBodyMetrics(occupant.body->body_points);
-
-    }
 
     //Do not draw if polygon's ID is Unknown
     if (occupant.matchedSeat.cabinRegion.id != REGION_UNKNOWN) {
@@ -282,6 +278,15 @@ void Visualizer::drawOccupantMetrics(const affdex::vision::Occupant& occupant) {
     drawText("Region Confidence", match_confidence, cv::Point(occupant.boundingBox.getTopLeft().x, padding -= spacing),
              false);
     drawText("Region " + id, region_type, cv::Point(occupant.boundingBox.getTopLeft().x, padding -= spacing), false);
+    drawText("ID", std::to_string(occupant.id), cv::Point(occupant.boundingBox.getTopLeft().x, padding -= spacing), false);
+    if (occupant.face) {
+        drawText("FaceID", std::to_string(occupant.face->getId()), cv::Point(occupant.boundingBox.getTopLeft().x, padding -= spacing), false);
+//        drawBoundingBox(occupant.face->getBoundingBox(), {0, 0, 255});
+    }
+    if (occupant.body) {
+        drawText("BodyID", std::to_string(occupant.body->id), cv::Point(occupant.boundingBox.getTopLeft().x, padding -= spacing), false);
+        drawBodyMetrics(occupant.body->body_points);
+    }
 }
 
 void Visualizer::drawObjectMetrics(const affdex::vision::Object& object) {

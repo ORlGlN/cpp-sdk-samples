@@ -26,20 +26,8 @@ public:
         logging_enabled_(enable_logging) {
     }
 
-    int getDataSize() {
-        std::lock_guard<std::mutex> lg(mtx);
-        return results_.size();
-    }
-
     int getProcessedFrames() {
         return processed_frames_;
-    }
-
-    std::pair<vision::Frame, std::map<vision::Id, T>> getData() {
-        std::lock_guard<std::mutex> lg(mtx);
-        std::pair<vision::Frame, std::map<vision::Id, T>> dpoint = results_.front();
-        results_.pop_front();
-        return dpoint;
     }
 
     //Needed to get Image data to create output video
@@ -48,8 +36,6 @@ public:
     virtual void outputToFile(const std::map<vision::Id, T>& id_type_map, double time_stamp) = 0;
 
     virtual void draw(const std::map<vision::Id, T>& id_type_map, const vision::Frame& image) = 0;
-
-    virtual void processResults() = 0;
 
     virtual void reset() = 0;
 
@@ -66,13 +52,16 @@ public:
 
     void processResults(const vision::Frame& frame) {
         most_recent_frame_ = frame;
-        if (getDataSize() > 0) {
+        std::lock_guard<std::mutex> lg(mtx);
+        if (!results_.empty()) {
             time_callback_received_ = most_recent_frame_.getTimestamp();
-            processResults();
+            latest_data_ = results_.front();
+            results_.pop_front();
+            const vision::Frame old_frame = latest_data_.first;
+            const auto items = latest_data_.second;
+            outputToFile(items, old_frame.getTimestamp());
         }
-        else {
-            drawRecentFrame();
-        }
+        drawRecentFrame();
     }
 
 protected:

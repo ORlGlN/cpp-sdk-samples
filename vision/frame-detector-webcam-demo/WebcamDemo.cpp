@@ -130,8 +130,12 @@ bool processFrameFromWebcam(std::unique_ptr<vision::Detector>& frame_detector, P
 
     cv::Mat img;
     if (!webcam.read(img)) {   //Capture an image from the camera
-        std::cerr << "Failed to read frame from webcam\n";
-        return false;
+        // on macOS, it might fail for the first frame, so wait a bit then try again
+        cv::waitKey(5);
+        if (!webcam.read(img)) {
+            std::cerr << "Failed to read frame from webcam\n";
+            return false;
+        }
     }
 
     const Timestamp ts = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -175,7 +179,7 @@ void processFaceStream(std::unique_ptr<vision::Detector>& frame_detector, std::o
                 break;
             }
 
-            image_listener.processResults();
+            image_listener.processResults(frame);
             //To save output video file
             if (program_options.write_video) {
                 program_options.output_video << image_listener.getImageData();
@@ -247,7 +251,7 @@ void processOccupantStream(std::unique_ptr<vision::Detector>& frame_detector,
 
     // prepare listeners
     PlottingOccupantListener occupant_listener(csv_file_stream, program_options.draw_display, !program_options
-        .disable_logging, program_options.draw_id, 500, frame_detector->getCabinRegionConfig().getRegions());
+        .disable_logging, program_options.draw_id, 200, frame_detector->getCabinRegionConfig().getRegions());
 
 
     // configure the Detector by enabling features and assigning listeners

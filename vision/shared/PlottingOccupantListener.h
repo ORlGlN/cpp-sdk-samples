@@ -91,16 +91,6 @@ public:
         viz_.showImage();
         image_data_ = viz_.getImageData();
     }
-    using PlottingListener::processResults; // make the overload taking a Frame arg visible
-    void processResults() override {
-        while (getDataSize() > 0) {
-            latest_data_ = getData();
-            drawRecentFrame();
-            const vision::Frame old_frame = latest_data_.first;
-            const auto occupants = latest_data_.second;
-            outputToFile(occupants, old_frame.getTimestamp());
-        }
-    }
 
     int getSamplesWithOccupantsPercent() const {
         return (static_cast<float>(frames_with_occupants_) / processed_frames_) * 100;

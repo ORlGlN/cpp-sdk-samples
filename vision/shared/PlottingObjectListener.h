@@ -130,17 +130,6 @@ public:
         image_data_ = viz_.getImageData();
     }
 
-    using PlottingListener::processResults;  // make the overload taking a Frame arg visible
-    void processResults() override {
-        while (getDataSize() > 0) {
-            latest_data_ = getData();
-            drawRecentFrame();
-            vision::Frame old_frame = latest_data_.first;
-            const auto objects = latest_data_.second;
-            outputToFile(objects, old_frame.getTimestamp());
-        }
-    }
-
     int getSamplesWithObjectsPercent() const {
         return (static_cast<float>(frames_with_objects_) / processed_frames_) * 100;
     }
